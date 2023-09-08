@@ -4,24 +4,27 @@ trigger:
 pool:
   vmImage: 'maven'
 
+variables:
+  VmImagename: "maven"
+
 stages:
-- stage: Build
-  jobs:
-  - job: MavenBuild
-    displayName: 'Build with Maven'
-    steps:
-    - task: UseJavaVersion@0
-      inputs:
-        version: '11'
+  - stage: Build
+    displayName: build app
+    jobs:
+      - job:
+        pool: $(VmImagename)
 
-    - script: 'echo "##vso[task.prependpath]$(Agent.ToolsDirectory)/jdk/bin"'
-      displayName: 'Add Java to PATH'
+        stpes:
+            - task: Maven@4
+              inputs:
+                mavenPomFile: 'pom.xml'
+                goals: 'clean install'
+                publishJUnitResults: true
+                testResultsFiles: '**/surefire-reports/TEST-*.xml'
+                javaHomeOption: 'JDKVersion'
+                mavenVersionOption: 'Default'
+                mavenAuthenticateFeed: false
+                effectivePomSkip: false
+                sonarQubeRunAnalysis: false
 
-    - script: 'mvn clean install'
-      displayName: 'Build Maven Project'
-
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: '$(System.DefaultWorkingDirectory)/target'
-        artifactName: 'drop'
 
