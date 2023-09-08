@@ -1,0 +1,27 @@
+trigger:
+- '*'
+
+pool:
+  vmImage: 'maven'
+
+stages:
+- stage: Build
+  jobs:
+  - job: MavenBuild
+    displayName: 'Build with Maven'
+    steps:
+    - task: UseJavaVersion@0
+      inputs:
+        version: '11'
+
+    - script: 'echo "##vso[task.prependpath]$(Agent.ToolsDirectory)/jdk/bin"'
+      displayName: 'Add Java to PATH'
+
+    - script: 'mvn clean install'
+      displayName: 'Build Maven Project'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(System.DefaultWorkingDirectory)/target'
+        artifactName: 'drop'
+
